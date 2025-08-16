@@ -19,15 +19,16 @@ import statsapi
 
 
 # gameID = statsapi.schedule(team=119, date='10/25/2024')[0]['game_id']
+# gameID = statsapi.schedule(team=119, date='2024-10-25')[0]['game_id']
 # boxscoreData = statsapi.boxscore_data(gameID)
 
 # for p in boxscoreData['homeBatters']:
 #     if p['name'] == "Freeman, F":
 #         print(p)
 
-players = statsapi.lookup_player('freeman,', season=2025)
-for p in players:
-    print(f"{p['fullName'], p['id']}")
+# players = statsapi.lookup_player('freeman,', season=2025)
+# for p in players:
+#     print(f"{p['fullName'], p['id']}")
 
 # print(statsapi.boxscore(776747, True, True, True, True, True))
 # with open("test.txt", "w") as f:
@@ -37,3 +38,4 @@ for p in players:
 # for p in data['homeBatters']:
 #     if p['name'] == "Schneider":
 #         print(p['r'])
+

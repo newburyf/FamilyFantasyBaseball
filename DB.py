@@ -45,17 +45,53 @@ def addParticipant(name):
     if con == None or cur == None:
         setUpConnection()
     
-    cur.execute("INSERT INTO participants (participantName) VALUES (?)", name)
+    cur.execute("INSERT INTO participants (participantName) VALUES (?);", name)
     con.commit()
 
-def addPlayer(first, last):
+def addPlayer(mlbID, first, last):
     global con
     global cur
     if con == None or cur == None:
         setUpConnection()
 
-    cur.execute("INSERT INTO players (firstName, lastName) VALUES (?,?)", first, last)
+    cur.execute("INSERT INTO players (mlbID, firstName, lastName) VALUES (?,?,?);", mlbID, first, last)
+    con.commit()
 
+def addDraft(mlbID, participant, position, teamID, roundNum, year):
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+
+    cur.execute("""
+                    INSERT INTO draft 
+                    (playerID, participantName, positionCode, teamID, draftRoundNum, year) 
+                    VALUES (?,?,?,?,?);""",
+                    mlbID, participant, position, teamID, roundNum, year)
+    
+    con.commit()
+
+def addGame(teamOne, teamTwo, round, date):
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+
+    cur.execute("INSERT INTO games (teamOne, teamTwo, round, date) VALUES (?,?,?,?);", teamOne, teamTwo, round, date)
+    con.commit()
+
+def addGameStats(playerID, gameID, hTB, hRBI, hR, hSB, hBB, hK, pIP, pW, pL, pHD, pSV, pER, pH, pK, pBB, points):
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+
+    cur.execute("""
+                    INSERT INTO gameStats
+                    (playerID, gameID, hTB, hRBI, hR, hSB, hBB, hK, pIP, pW, pL, pHD, pSV, pER, pH, pK, pBB, points)
+                    VALUES (?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?)
+                ;""", playerID, gameID, hTB, hRBI, hR, hSB, hBB, hK, pIP, pW, pL, pHD, pSV, pER, pH, pK, pBB, points)
+    con.commit()
 
 
     

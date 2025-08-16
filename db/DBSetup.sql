@@ -22,7 +22,8 @@ CREATE TABLE teams (
 );
 
 CREATE TABLE rounds (
-    code TEXT PRIMARY KEY,
+    number INTEGER PRIMARY KEY
+    code TEXT NOT NULL,
     name TEXT NOT NULL
 );
 
@@ -32,8 +33,7 @@ CREATE TABLE positions (
 );
 
 CREATE TABLE participants (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    participantName TEXT NOT NULL
+    participantName TEXT PRIMARY KEY
 );
 
 CREATE TABLE players (
@@ -47,9 +47,7 @@ CREATE TABLE games (
     teamOne INTEGER REFERENCES teams(mlbID),
     teamTwo INTEGER REFERENCES teams(mlbID),
     roundCode TEXT REFERENCES rounds(code),
-    day INTEGER NOT NULL,
-    month TEXT NOT NULL,
-    year INTEGER NOT NULL
+    date TEXT NOT NULL
 );
 
 CREATE TABLE gameStats (
@@ -78,8 +76,8 @@ CREATE TABLE draft (
     playerID INTEGER REFERENCES players(mlbID),
     participantName TEXT REFERENCES participants(participantName),
     positionCode TEXT REFERENCES positions(code),
-    teamCode INTEGER REFERENCES teams(mlbID),
-    draftRoundCode TEXT REFERENCES rounds(code),
+    teamID INTEGER REFERENCES teams(mlbID),
+    draftRoundNum TEXT REFERENCES rounds(number),
     year INTEGER NOT NULL,
     PRIMARY KEY(participantName, playerID, year)
 );
@@ -117,12 +115,12 @@ VALUES
     ('Toronto','Blue Jays','TOR',141),
     ('Washington','Nationals','WAS',120);
 
-INSERT INTO rounds (code, name)
+INSERT INTO rounds (number, code, name)
 VALUES
-    ('WC','Wild Card'),
-    ('DS','Division Series'),
-    ('CS','Championship Series'),
-    ('WS','World Series');
+    (1,'WC','Wild Card'),
+    (2,'DS','Division Series'),
+    (3,'CS','Championship Series'),
+    (4,'WS','World Series');
 
 INSERT INTO positions (code, name)
 VALUES
