@@ -26,9 +26,11 @@ import statsapi
 #     if p['name'] == "Freeman, F":
 #         print(p)
 
-# players = statsapi.lookup_player('freeman,', season=2025)
-# for p in players:
-#     print(f"{p['fullName'], p['id']}")
+players = statsapi.lookup_player('freeman', season=2025)
+for p in players:
+    # print(f"{p['fullName'], p['id']}")
+    print(p)
+    print()
 
 # print(statsapi.boxscore(776747, True, True, True, True, True))
 # with open("test.txt", "w") as f:

@@ -55,7 +55,7 @@ def addPlayer(mlbID, first, last):
     if con == None or cur == None:
         setUpConnection()
 
-    cur.execute("INSERT INTO players (mlbID, firstName, lastName) VALUES (?,?,?);", mlbID, first, last)
+    cur.execute("INSERT INTO players (mlbID, firstName, lastName) VALUES (?,?,?);", [mlbID, first, last])
     con.commit()
 
 def addDraft(mlbID, participant, position, teamID, roundNum, year):
@@ -68,7 +68,7 @@ def addDraft(mlbID, participant, position, teamID, roundNum, year):
                     INSERT INTO draft 
                     (playerID, participantName, positionCode, teamID, draftRoundNum, year) 
                     VALUES (?,?,?,?,?);""",
-                    mlbID, participant, position, teamID, roundNum, year)
+                    [mlbID, participant, position, teamID, roundNum, year])
     
     con.commit()
 
@@ -91,8 +91,16 @@ def addGameStats(playerID, gameID, hitterStats, pitcherStats, points):
                     INSERT INTO gameStats
                     (playerID, gameID, hTB, hRBI, hR, hSB, hBB, hK, pIP, pW, pL, pHD, pSV, pER, pH, pK, pBB, points)
                     VALUES (?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?)
-                ;""", playerID, gameID, hitterStats[HS.TB.value], hitterStats[HS.RBI.value], hitterStats[HS.R.value], hitterStats[HS.SB.value], hitterStats[HS.BB.value], hitterStats[HS.K.value], pitcherStats[PS.IP.value], pitcherStats[PS.W.value], pitcherStats[PS.L.value], pitcherStats[PS.HD.value], pitcherStats[PS.SV.value], pitcherStats[PS.ER.value], pitcherStats[PS.H.value], pitcherStats[PS.K.value], pitcherStats[PS.BB.value], points)
+                ;""", [playerID, gameID, hitterStats[HS.TB.value], hitterStats[HS.RBI.value], hitterStats[HS.R.value], hitterStats[HS.SB.value], hitterStats[HS.BB.value], hitterStats[HS.K.value], pitcherStats[PS.IP.value], pitcherStats[PS.W.value], pitcherStats[PS.L.value], pitcherStats[PS.HD.value], pitcherStats[PS.SV.value], pitcherStats[PS.ER.value], pitcherStats[PS.H.value], pitcherStats[PS.K.value], pitcherStats[PS.BB.value], points])
     con.commit()
 
-
+def getTeam(teamID):
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
     
+    res = cur.execute("SELECT location, teamName FROM teams WHERE mlbID = ?;", [teamID])
+    location, team = res.fetchone()
+    return location + " " + team
+        
