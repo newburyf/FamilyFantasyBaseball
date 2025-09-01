@@ -1,7 +1,6 @@
 import DB as db
 import statsapi
-from Enums import HitterStats as HS, PitcherStats as PS
-
+from Enums import HitterStats as HS, HitterPoints as HP, PitcherStats as PS, PitcherPoints as PP
 
 def printCommands():
     commands = [
@@ -21,7 +20,129 @@ def exit():
     return False
 
 def updateStats():
-    print("Updating stats")
+    print(f"Updating stats\n--------------")
+    dateString = input("Enter the date (YYYY-MM-DD) to update stats for (0 to cancel): ")
+    year = dateString.split("-")[0] 
+    
+    if dateString != "0":
+        print(f"\nRounds:")
+        allRounds = db.getAllRounds()
+        i = 1
+        for r in allRounds:
+            print(f"{i}. {r[1]}")
+            i += 1
+
+        selectedRound = input("Enter the round of the date (0 to cancel): ")
+        roundNum = 0
+        try:
+            roundNum = int(selectedRound)
+        except:
+            print("Please enter a valid round number")
+
+        if roundNum != 0:
+            roundCode = allRounds[roundNum - 1][0]
+
+            currentPlayers = db.getCurrentDraft(year, roundCode)
+            for player in currentPlayers:
+                teamID = player[2]
+                games = statsapi.schedule(team=teamID, date=dateString)
+                if len(games) != 0:
+                    gameID = games[0]["game_id"]
+                    boxscoreData = statsapi.boxscore_data(gameID)
+
+                    side = "home"
+                    awayID = boxscoreData["teamInfo"]["away"]["id"]
+                    if awayID == teamID:
+                        side = "away"
+                    
+                    homeID = boxscoreData["teamInfo"]["home"]["id"]
+                    db.addGame(gameID, homeID, awayID, roundCode, dateString)
+
+                    hitterStats = [0 for i in range(0, len(HS))]
+                    pitcherStats = [0 for i in range(0, len(PS))]
+                    points = 0
+
+                    playerID = player[1]
+                    positionCode = player[3]
+                    
+                    if positionCode == "IF" or positionCode == "OF":
+                        for playerStats in boxscoreData[side + "Batters"]:
+                            if playerStats["personId"] == playerID:
+                                hitterStats[HS.RBI.value] = int(playerStats["rbi"])
+                                hitterStats[HS.R.value] = int(playerStats["r"])
+                                hitterStats[HS.SB.value] = int(playerStats["sb"])
+                                hitterStats[HS.BB.value] = int(playerStats["bb"])
+                                hitterStats[HS.K.value] = int(playerStats["k"])
+
+                                hits = int(playerStats["h"])
+                                tb = 0
+
+                                doubles = int(playerStats["doubles"])
+                                tb += 2 * doubles
+                                hits -= doubles
+
+                                triples = int(playerStats["triples"])
+                                tb += 3 * triples
+                                hits -= triples
+
+                                hr = int(playerStats["hr"])
+                                tb += 4 * hr
+                                hits -= hr
+
+                                tb += hits # singles
+
+                                hitterStats[HS.TB.value] = tb
+
+                                for i in range(0, len(hitterStats)):
+                                    points += HP[i] * hitterStats[i]
+
+                                break
+                        
+                        else:
+                            for playerStats in boxscoreData[side + "Pitchers"]:
+                                if playerStats["personId"] == playerID:
+                                    o = 0
+                                    ip = playerStats["ip"]
+                                    full, partial = ip.split(".")
+                                    o = int(full) * 3 + int(partial)
+                                    pitcherStats[PS.O.value] = o
+
+                                    w = 0
+                                    if "W" in playerStats["note"]:
+                                        w = 1
+                                    pitcherStats[PS.W.value] = w
+
+                                    l = 0
+                                    if "L" in playerStats["note"]:
+                                        l = 1
+                                    pitcherStats[PS.L.value] = l
+
+                                    hd = 0
+                                    if "H" in playerStats["note"]:
+                                        hd = 1
+                                    pitcherStats[PS.HD.value] = hd
+
+                                    sv = 0
+                                    if "S" in playerStats["note"]:
+                                        sv = 1
+                                    pitcherStats[PS.SV.value] = sv
+
+                                    pitcherStats[PS.ER.value] = int(playerStats["er"])
+                                    pitcherStats[PS.H.value] = int(playerStats["h"])
+                                    pitcherStats[PS.K.value] = int(playerStats["k"])
+                                    pitcherStats[PS.BB.value] = int(playerStats["bb"])
+                                    
+                                    for i in range(0, len(pitcherStats)):
+                                        points += PP[i] * pitcherStats[i]
+
+                                    break
+                        
+                    db.addGameStats(playerID, gameID, hitterStats, pitcherStats, points)
+        else:
+            print("Canceling")
+    else:
+        print("Canceling")
+
     return True
 
 def addPlayer():

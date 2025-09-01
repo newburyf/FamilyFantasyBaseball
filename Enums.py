@@ -8,8 +8,11 @@ class HitterStats(Enum):
     BB = 4
     K = 5
 
+#              [tb, rbi, r, sb, bb, k]
+HitterPoints = [1, 1, 1, 1, 1, -1]
+
 class PitcherStats(Enum):
-    IP = 0
+    O = 0
     W = 1
     L = 2
     HD = 3
@@ -18,3 +21,6 @@ class PitcherStats(Enum):
     H = 6
     K = 7
     BB = 8
+
+#               [o, w, l, hd, sv, er, h, k, bb]
+PitcherPoints = [1, 2, -2, 2, 5, -2, -1, 1, -1]

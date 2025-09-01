@@ -15,6 +15,10 @@ def setUpConnection():
     cur = con.cursor()
 
 def closeConnection():
+    global cur
+    if not cur == None:
+        cur.close()
+
     global con
     if not con == None:
         con.close()
@@ -136,14 +140,36 @@ def addDraft(mlbID, participant, position, teamID, roundNum, year):
 
     return added
 
-def addGame(teamOne, teamTwo, round, date):
+def getCurrentDraft(year, round):
     global con
     global cur
     if con == None or cur == None:
         setUpConnection()
 
-    cur.execute("INSERT INTO games (teamOne, teamTwo, round, date) VALUES (?,?,?,?);", teamOne, teamTwo, round, date)
-    con.commit()
+    res = cur.execute("""SELECT participantID, playerID, teamID, positionCode 
+                         FROM draft 
+                         WHERE year = ? AND draftRoundNum = ?;""", 
+                         (year, round))
+    return res.fetchall()    
+
+def checkGameExists(mlbID):
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+
+    res = cur.execute("SELECT * FROM games WHERE mlbID = ?;", [mlbID])
+    return res.fetchone() is not None
+
+def addGame(mlbID, homeTeam, awayTeam, round, date):
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+
+    if not checkGameExists(mlbID):
+        cur.execute("INSERT INTO games (mlbID, homeTeam, awayTeam, round, date) VALUES (?,?,?,?,?);", [mlbID, homeTeam, awayTeam, round, date])
+        con.commit()
 
 def addGameStats(playerID, gameID, hitterStats, pitcherStats, points):
     global con
@@ -153,9 +179,9 @@ def addGameStats(playerID, gameID, hitterStats, pitcherStats, points):
 
     cur.execute("""
                     INSERT INTO gameStats
-                    (playerID, gameID, hTB, hRBI, hR, hSB, hBB, hK, pIP, pW, pL, pHD, pSV, pER, pH, pK, pBB, points)
+                    (playerID, gameID, hTB, hRBI, hR, hSB, hBB, hK, pO, pW, pL, pHD, pSV, pER, pH, pK, pBB, points)
                     VALUES (?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?, ?,?,?)
-                ;""", [playerID, gameID, hitterStats[HS.TB.value], hitterStats[HS.RBI.value], hitterStats[HS.R.value], hitterStats[HS.SB.value], hitterStats[HS.BB.value], hitterStats[HS.K.value], pitcherStats[PS.IP.value], pitcherStats[PS.W.value], pitcherStats[PS.L.value], pitcherStats[PS.HD.value], pitcherStats[PS.SV.value], pitcherStats[PS.ER.value], pitcherStats[PS.H.value], pitcherStats[PS.K.value], pitcherStats[PS.BB.value], points])
+                ;""", [playerID, gameID, hitterStats[HS.TB.value], hitterStats[HS.RBI.value], hitterStats[HS.R.value], hitterStats[HS.SB.value], hitterStats[HS.BB.value], hitterStats[HS.K.value], pitcherStats[PS.O.value], pitcherStats[PS.W.value], pitcherStats[PS.L.value], pitcherStats[PS.HD.value], pitcherStats[PS.SV.value], pitcherStats[PS.ER.value], pitcherStats[PS.H.value], pitcherStats[PS.K.value], pitcherStats[PS.BB.value], points])
     con.commit()
 
 def getTeam(teamID):

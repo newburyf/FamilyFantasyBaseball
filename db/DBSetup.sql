@@ -45,23 +45,23 @@ CREATE TABLE players (
 );
 
 CREATE TABLE games (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    teamOne INTEGER REFERENCES teams(mlbID),
-    teamTwo INTEGER REFERENCES teams(mlbID),
+    mlbID INTEGER PRIMARY KEY,
+    homeTeam INTEGER REFERENCES teams(mlbID),
+    awayTeam INTEGER REFERENCES teams(mlbID),
     roundCode TEXT REFERENCES rounds(code),
     date TEXT NOT NULL
 );
 
 CREATE TABLE gameStats (
     playerID INTEGER REFERENCES players(mlbID),
-    gameID INTEGER REFERENCES games(id),
+    gameID INTEGER REFERENCES games(mlbID),
     hTB INTEGER NOT NULL,
     hRBI INTEGER NOT NULL,
     hR INTEGER NOT NULL,
     hSB INTEGER NOT NULL,
     hBB INTEGER NOT NULL,
     hK INTEGER NOT NULL,
-    pIP INTEGER NOT NULL,
+    pO INTEGER NOT NULL,
     pW INTEGER NOT NULL,
     pL INTEGER NOT NULL,
     pHD INTEGER NOT NULL,
