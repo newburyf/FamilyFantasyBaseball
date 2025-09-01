@@ -22,7 +22,7 @@ CREATE TABLE teams (
 );
 
 CREATE TABLE rounds (
-    number INTEGER PRIMARY KEY
+    number INTEGER PRIMARY KEY,
     code TEXT NOT NULL,
     name TEXT NOT NULL
 );

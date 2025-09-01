@@ -46,8 +46,8 @@ def checkParticipantExists(name, year):
     if con == None or cur == None:
         setUpConnection()
     
-    res = cur.execute("SELECT * FROM participants WHERE name = ? AND year = ?;", [name, year])
-    return res.fetchone() is None
+    res = cur.execute("SELECT * FROM participants WHERE participantName = ? AND year = ?;", [name, year])
+    return res.fetchone() is not None
 
 def addParticipant(name, year):
     global con
@@ -79,7 +79,7 @@ def checkPlayerExists(mlbID):
         setUpConnection()
 
     res = cur.execute("SELECT * FROM players WHERE mlbID = ?;", [mlbID])
-    return res.fetchone() is None
+    return res.fetchone() is not None
 
 def addPlayer(mlbID, first, last):
     global con
@@ -115,7 +115,7 @@ def checkDraftExists(participantID, playerID, year, roundNum):
         setUpConnection()
     
     res = cur.execute("SELECT * FROM draft WHERE playerID = ? AND participantID = ? AND year = ? AND draftRoundNum = ?;", [playerID, participantID, year, roundNum])
-    return res.fetchone() is None
+    return res.fetchone() is not None
 
 def addDraft(mlbID, participant, position, teamID, roundNum, year):
     global con
@@ -128,12 +128,12 @@ def addDraft(mlbID, participant, position, teamID, roundNum, year):
 
         cur.execute("""
                     INSERT INTO draft 
-                    (playerID, participantName, positionCode, teamID, draftRoundNum, year) 
-                    VALUES (?,?,?,?,?);""",
+                    (playerID, participantID, positionCode, teamID, draftRoundNum, year) 
+                    VALUES (?,?,?,?,?,?);""",
                     [mlbID, participant, position, teamID, roundNum, year])
         con.commit()
         added = True
-        
+
     return added
 
 def addGame(teamOne, teamTwo, round, date):

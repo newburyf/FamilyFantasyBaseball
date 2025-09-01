@@ -5,12 +5,12 @@ from Enums import HitterStats as HS, PitcherStats as PS
 
 def printCommands():
     commands = [
-        "1: Update stats",
-        "2: Add player to database",
-        "3: Add player draft to database",
-        "4: Add participant to database",
-        "5: Do initial database setup",
-        "0: Exit"
+        "1: STATS (Update stats)",
+        "2: PLAYER (Add player to database)",
+        "3: DRAFT (Add player draft to database)",
+        "4: PARTICIPANT (Add participant to database)",
+        "5: SETUP (Do initial database setup)",
+        "0: EXIT"
     ]
     print(f"\nCommands:")
     for c in commands:
@@ -58,9 +58,9 @@ def addPlayer():
                 toAdd = players[playerNum-1]
                 added = db.addPlayer(toAdd['id'], toAdd['firstName'], toAdd['lastName'])
                 if added:
-                    print(f"Added {players[i-1]['fullName']} to the database")
+                    print(f"Added {players[playerNum-1]['fullName']} to the database")
                 else:
-                    print("Player already exists")
+                    print("Player is already in the database")
             else:
                 print("Canceling")
     else:
@@ -69,7 +69,7 @@ def addPlayer():
     return True
 
 def addDraft():
-    print(f"Adding draft result\n------------")
+    print(f"Adding draft result\n-------------------")
     yearString = input("Enter the current year (0 to cancel): ")
     year = 0
     try:
@@ -78,7 +78,7 @@ def addDraft():
         print("Please enter a valid year")
 
     if year != 0:
-        print("Participants:")
+        print(f"\nParticipants:")
         allParticipants = db.getAllParticipants(year)
         if len(allParticipants) == 0:
             print(f"No participants registered for {yearString} yet")
@@ -100,7 +100,7 @@ def addDraft():
                 participantID = allParticipants[participantNum - 1][0]
 
                 allPlayers = db.getAllPlayers()
-                print("Players:")
+                print(f"\nPlayers:")
                 i = 1
                 for p in allPlayers:
                     print(f"{i}. {p[1]}")
@@ -118,10 +118,11 @@ def addDraft():
                     playerID = allPlayers[playerNum-1][0]
                     
                     allTeams = db.getAllTeams()
-                    print("Teams:")
+                    print(f"\nTeams:")
                     i = 1
                     for t in allTeams:
                         print(f"{i}. {t[1]}")
+                        i += 1
 
                     selectedTeam = input("Please enter the number of the team the player is currently on (0 to cancel): ")
                     teamNum = 0
@@ -134,10 +135,11 @@ def addDraft():
                         teamID = allTeams[teamNum - 1][0]
 
                         allPositions = db.getAllPositions()
-                        print("Positions:")
+                        print(f"\fPositions:")
                         i = 1
                         for p in allPositions:
                             print(f"{i}. {p[1]}")
+                            i += 1
 
                         selectedPosition = input("Please enter the number of the position the player is being drafted at (0 to cancel): ")
                         positionNum = 0
@@ -150,10 +152,11 @@ def addDraft():
                             positionCode = allPositions[positionNum - 1][0]
 
                             allRounds = db.getAllRounds()
-                            print("Rounds:")
+                            print(f"\nRounds:")
                             i = 1
                             for r in allRounds:
                                 print(f"{i}. {r[1]}")
+                                i += 1
 
                             selectedRound = input("Please enter the current round (0 to cancel): ")
                             roundNum = 0
@@ -210,7 +213,7 @@ def initialDBSetUp():
 
     if userConfirmation == "y":
         print("Setting up database")
-        db.initialDBSetUp()
+        db.initialDBSetup()
         print("Set up finished")
     else:
         print("Canceling setup")
