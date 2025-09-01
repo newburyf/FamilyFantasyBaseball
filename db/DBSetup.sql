@@ -33,7 +33,9 @@ CREATE TABLE positions (
 );
 
 CREATE TABLE participants (
-    participantName TEXT PRIMARY KEY
+    participantID INTEGER PRIMARY KEY AUTOINCREMENT,
+    participantName TEXT NOT NULL,
+    year INTEGER NOT NULL
 );
 
 CREATE TABLE players (
@@ -74,12 +76,12 @@ CREATE TABLE gameStats (
 
 CREATE TABLE draft (
     playerID INTEGER REFERENCES players(mlbID),
-    participantName TEXT REFERENCES participants(participantName),
+    participantID TEXT REFERENCES participants(participantID),
     positionCode TEXT REFERENCES positions(code),
     teamID INTEGER REFERENCES teams(mlbID),
     draftRoundNum TEXT REFERENCES rounds(number),
     year INTEGER NOT NULL,
-    PRIMARY KEY(participantName, playerID, year)
+    PRIMARY KEY(participantID, playerID, year, draftRoundNum)
 );
 
 INSERT INTO teams (location, teamName, code, mlbID) 

@@ -40,14 +40,46 @@ def initialDBSetup():
     except sqlite3.OperationalError as e:
         print(e)
 
-def addParticipant(name):
+def checkParticipantExists(name, year):
     global con
     global cur
     if con == None or cur == None:
         setUpConnection()
     
-    cur.execute("INSERT INTO participants (participantName) VALUES (?);", name)
-    con.commit()
+    res = cur.execute("SELECT * FROM participants WHERE name = ? AND year = ?;", [name, year])
+    return res.fetchone() is None
+
+def addParticipant(name, year):
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+    
+    added = False
+    if not checkParticipantExists(name, year):
+        cur.execute("INSERT INTO participants (participantName, year) VALUES (?,?);", [name, year])
+        con.commit()
+        added = True
+
+    return added
+
+def getAllParticipants(year):
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+
+    res = cur.execute("SELECT participantID, participantName FROM participants WHERE year = ?;", [year])
+    return res.fetchall()
+
+def checkPlayerExists(mlbID):
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+
+    res = cur.execute("SELECT * FROM players WHERE mlbID = ?;", [mlbID])
+    return res.fetchone() is None
 
 def addPlayer(mlbID, first, last):
     global con
@@ -55,8 +87,35 @@ def addPlayer(mlbID, first, last):
     if con == None or cur == None:
         setUpConnection()
 
-    cur.execute("INSERT INTO players (mlbID, firstName, lastName) VALUES (?,?,?);", [mlbID, first, last])
-    con.commit()
+    added = False
+    if not checkPlayerExists(mlbID):    
+        cur.execute("INSERT INTO players (mlbID, firstName, lastName) VALUES (?,?,?);", [mlbID, first, last])
+        con.commit()
+        added = True
+    
+    return added
+
+def getAllPlayers():
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+
+    res = cur.execute("SELECT * FROM players;")
+    playerInfo = []
+    for mlbID, firstName, lastName in res.fetchall():
+        playerInfo.append( ( mlbID, firstName + " " + lastName ) )
+
+    return playerInfo
+
+def checkDraftExists(participantID, playerID, year, roundNum):
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+    
+    res = cur.execute("SELECT * FROM draft WHERE playerID = ? AND participantID = ? AND year = ? AND draftRoundNum = ?;", [playerID, participantID, year, roundNum])
+    return res.fetchone() is None
 
 def addDraft(mlbID, participant, position, teamID, roundNum, year):
     global con
@@ -64,13 +123,18 @@ def addDraft(mlbID, participant, position, teamID, roundNum, year):
     if con == None or cur == None:
         setUpConnection()
 
-    cur.execute("""
+    added = False
+    if not checkDraftExists(participant, mlbID, year, roundNum):
+
+        cur.execute("""
                     INSERT INTO draft 
                     (playerID, participantName, positionCode, teamID, draftRoundNum, year) 
                     VALUES (?,?,?,?,?);""",
                     [mlbID, participant, position, teamID, roundNum, year])
-    
-    con.commit()
+        con.commit()
+        added = True
+        
+    return added
 
 def addGame(teamOne, teamTwo, round, date):
     global con
@@ -103,4 +167,33 @@ def getTeam(teamID):
     res = cur.execute("SELECT location, teamName FROM teams WHERE mlbID = ?;", [teamID])
     location, team = res.fetchone()
     return location + " " + team
-        
+
+def getAllTeams():
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+
+    res = cur.execute("SELECT mlbID, location, teamName FROM teams;")
+    teamInfo = []
+    for mlbID, location, teamName in res.fetchall():
+        teamInfo.append( ( mlbID, location + " " + teamName ) )
+    return teamInfo
+
+def getAllPositions():
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+
+    res = cur.execute("SELECT * FROM positions;")
+    return res.fetchall()
+
+def getAllRounds():
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+
+    res = cur.execute("SELECT number, name FROM rounds;")
+    return res.fetchall()
