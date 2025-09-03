@@ -1,23 +1,21 @@
 import DB as db
 import statsapi
 from Enums import HitterStats as HS, HitterPoints as HP, PitcherStats as PS, PitcherPoints as PP
+import json
 
 def printCommands():
     commands = [
-        "1: STATS (Update stats)",
-        "2: PLAYER (Add player to database)",
-        "3: DRAFT (Add player draft to database)",
-        "4: PARTICIPANT (Add participant to database)",
-        "5: SETUP (Do initial database setup)",
-        "0: EXIT"
+        "STATS (Update stats)",
+        "PUSH (Push stats changes)",
+        "PLAYER (Add player to database)",
+        "DRAFT (Add player draft to database)",
+        "PARTICIPANT (Add participant to database)",
+        "SETUP (Do initial database setup)",
+        "EXIT",
     ]
     print(f"\nCommands:")
-    for c in commands:
-        print(c)
-
-def exit():
-    print("Exiting, thanks for playing!")
-    return False
+    for i, c in enumerate(commands):
+        print(f"{i + 1}: {c}")
 
 def updateStats():
     print(f"Updating stats\n--------------")
@@ -32,7 +30,7 @@ def updateStats():
             print(f"{i}. {r[1]}")
             i += 1
 
-        selectedRound = input("Enter the round of the date (0 to cancel): ")
+        selectedRound = input("Enter the number of the round of the date (0 to cancel): ")
         roundNum = 0
         try:
             roundNum = int(selectedRound)
@@ -138,11 +136,30 @@ def updateStats():
                                     break
                         
                     db.addGameStats(playerID, gameID, hitterStats, pitcherStats, points)
+
+            print("Stats updated")
         else:
             print("Canceling")
     else:
         print("Canceling")
 
+    return True
+
+def pushStatsChanges():
+    currentYearString = input("Enter the current year (0 to cancel): ")
+    currentYear = 0
+    try:
+        currentYear = int(currentYearString)
+    except:
+        print("Please enter a valid year")
+
+    if currentYear != 0:
+        scoresData = db.generateJSONData(currentYear)
+        with open(f"website/data/{currentYear}.json", "w") as f:
+            json.dump(scoresData, f)
+
+        print("Stats changes pushed")
+    
     return True
 
 def addPlayer():
@@ -345,12 +362,13 @@ def main():
     print(f"Welcome to Family Fantasy Baseball!\n-----------------------------------")
 
     commands = [
-        exit,
         updateStats,
+        pushStatsChanges,
         addPlayer,
         addDraft,
         addParticipant,
-        initialDBSetUp
+        initialDBSetUp,
+        exit
     ]
     
     running = True
@@ -367,7 +385,7 @@ def main():
             print(e)
             print("Please enter a valid command number.")
         
-        commandToRun = commands[commandNum]
+        commandToRun = commands[commandNum - 1]
         running = commandToRun()
 
 if __name__ == "__main__":
