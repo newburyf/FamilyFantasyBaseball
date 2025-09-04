@@ -1,9 +1,28 @@
-table {
-	border-collapse: collapse;
-	width: 100%;
+.round {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
-td, th {
-	border: 1px solid #000;
-	padding: 8px;
-	text-align: center;
+
+.round h2 {
+  margin-top: 0;
+  color: #004080;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+table th {
+  background: #004080;
+  color: white;
+  padding: 0.5rem;
+}
+table td {
+  text-align: center;
+  padding: 0.5rem;
 }

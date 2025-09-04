@@ -1,18 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-	<link rel="stylesheet" href="style.css">
-	<script src="script.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fantasy Baseball League</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+<body>
+  <header>
+    <h1>Fantasy Baseball League</h1>
+  </header>
 
-<body onload="generateTable()">
+  <main>
+    <section class="rules">
+      <h2>League Rules</h2>
+      <ul>
+        <li>Each team drafts 10 players.</li>
+        <li>Points for hits, home runs, RBIs, stolen bases.</li>
+        <li>Pitchers earn points for strikeouts and wins.</li>
+        <li>Season lasts from Opening Day to the end of the regular season.</li>
+        <li>Top 4 teams make the playoffs.</li>
+      </ul>
+    </section>
 
-<h2 style="text-align: center;">2025 Scores</h2>
+    <div class="center">
+      <a href="stats.html" class="btn">View Stats</a>
+    </div>
+  </main>
 
-<div id="tableContainer">
-	<!-- Table will be generated in here -->
-</div>
-
+  <footer>
+    <p>&copy; 2025 Fantasy Baseball League</p>
+  </footer>
 </body>
 </html>
