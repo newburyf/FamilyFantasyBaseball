@@ -96,44 +96,44 @@ def updateStats():
 
                                 break
                         
-                        else:
-                            for playerStats in boxscoreData[side + "Pitchers"]:
-                                if playerStats["personId"] == playerID:
-                                    o = 0
-                                    ip = playerStats["ip"]
-                                    full, partial = ip.split(".")
-                                    o = int(full) * 3 + int(partial)
-                                    pitcherStats[PS.O.value] = o
+                    else:
+                        for playerStats in boxscoreData[side + "Pitchers"]:
+                            if playerStats["personId"] == playerID:
+                                o = 0
+                                ip = playerStats["ip"]
+                                full, partial = ip.split(".")
+                                o = int(full) * 3 + int(partial)
+                                pitcherStats[PS.O.value] = o
 
-                                    w = 0
-                                    if "W" in playerStats["note"]:
-                                        w = 1
-                                    pitcherStats[PS.W.value] = w
+                                w = 0
+                                if "W" in playerStats["note"]:
+                                    w = 1
+                                pitcherStats[PS.W.value] = w
 
-                                    l = 0
-                                    if "L" in playerStats["note"]:
-                                        l = 1
-                                    pitcherStats[PS.L.value] = l
+                                l = 0
+                                if "L" in playerStats["note"]:
+                                    l = 1
+                                pitcherStats[PS.L.value] = l
 
-                                    hd = 0
-                                    if "H" in playerStats["note"]:
-                                        hd = 1
-                                    pitcherStats[PS.HD.value] = hd
+                                hd = 0
+                                if "H" in playerStats["note"]:
+                                    hd = 1
+                                pitcherStats[PS.HD.value] = hd
 
-                                    sv = 0
-                                    if "S" in playerStats["note"]:
-                                        sv = 1
-                                    pitcherStats[PS.SV.value] = sv
+                                sv = 0
+                                if "S" in playerStats["note"]:
+                                    sv = 1
+                                pitcherStats[PS.SV.value] = sv
 
-                                    pitcherStats[PS.ER.value] = int(playerStats["er"])
-                                    pitcherStats[PS.H.value] = int(playerStats["h"])
-                                    pitcherStats[PS.K.value] = int(playerStats["k"])
-                                    pitcherStats[PS.BB.value] = int(playerStats["bb"])
-                                    
-                                    for i in range(0, len(pitcherStats)):
-                                        points += PP[i] * pitcherStats[i]
+                                pitcherStats[PS.ER.value] = int(playerStats["er"])
+                                pitcherStats[PS.H.value] = int(playerStats["h"])
+                                pitcherStats[PS.K.value] = int(playerStats["k"])
+                                pitcherStats[PS.BB.value] = int(playerStats["bb"])
+                                
+                                for i in range(0, len(pitcherStats)):
+                                    points += PP[i] * pitcherStats[i]
 
-                                    break
+                                break
                         
                     db.addGameStats(playerID, gameID, hitterStats, pitcherStats, points)
 
@@ -357,7 +357,12 @@ def initialDBSetUp():
         print("Canceling setup")
 
     return True
-    
+
+def exitGame():
+    print("Thanks for playing")
+    db.closeConnection()
+    return False
+
 def main():
     print(f"Welcome to Family Fantasy Baseball!\n-----------------------------------")
 
@@ -368,7 +373,7 @@ def main():
         addDraft,
         addParticipant,
         initialDBSetUp,
-        exit
+        exitGame,
     ]
     
     running = True
@@ -381,12 +386,11 @@ def main():
         try:
             commandNum = int(userCommand)
 
-        except Exception as e:
-            print(e)
+            commandToRun = commands[commandNum - 1]
+            running = commandToRun()
+        except:
             print("Please enter a valid command number.")
         
-        commandToRun = commands[commandNum - 1]
-        running = commandToRun()
 
 if __name__ == "__main__":
     main()
