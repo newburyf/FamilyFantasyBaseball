@@ -1,9 +1,6 @@
 import sqlite3
 from Enums import HitterStats as HS, PitcherStats as PS
 
-# Python sqlite3 docs
-# https://docs.python.org/3/library/sqlite3.html
-
 con = None
 cur = None
 
