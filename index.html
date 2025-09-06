@@ -3,28 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fantasy Baseball League</title>
+  <title>Newbury Playoff Baseball</title>
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 
   <header>
-    <h1>Fantasy Baseball League</h1>
+    <h1>Newbury Family Playoff Fantasy Baseball</h1>
     <nav>
       <a href="index.html">Home</a>
-      <a href="stats.html">Stats</a>
+      <a href="scores.html">Scores</a>
     </nav>
   </header>
 
   <main>
-    <h2>Welcome!</h2>
-    <p>Rules: tbd</p>
-    <a href="stats.html" class="btn">View Stats</a>
+    <p>
+      Welcome to the Newbury family playoff fantasy baseball! To view scores, navigate to the scores page. During the playoffs scores will be updated daily.
+    </p>
+
+    <h3>Rules</h3>
+    <p>
+      Each round participants draft an infielder, outfielder, and a pitcher, draft picks carry over between rounds if the player's team isn't eliminated. Draft order is determined by previous year's result.
+    </p>
+
+    <h3>Scoring</h3>
+    <table>
+      <tr>
+        <th colspan="7">Batter Scoring</th>
+      </tr>
+
+      <tr>
+        <th>Stat</th>
+        <td>TB</td>
+        <td>RBI</td>
+        <td>R</td>
+        <td>SB</td>
+        <td>BB</td>
+        <td>K</td>
+      </tr>
+
+      <tr>
+        <th>Points</th>
+        <td>1</td>
+        <td>1</td>
+        <td>1</td>
+        <td>1</td>
+        <td>1</td>
+        <td>-1</td>
+      </tr>
+
+    </table>
+
+    <table>
+      <tr>
+        <th colspan="10">Pitcher Scoring</th>
+      </tr>
+
+      <tr>
+        <th>Stat</th>
+        <td>IP/O</td>
+        <td>W</td>
+        <td>L</td>
+        <td>HD</td>
+        <td>SV</td>
+        <td>ER</td>
+        <td>H</td>
+        <td>K</td>
+        <td>BB</td>
+      </tr>
+
+      <tr>
+        <th>Points</th>
+        <td>1</td>
+        <td>2</td>
+        <td>-2</td>
+        <td>2</td>
+        <td>5</td>
+        <td>-2</td>
+        <td>-1</td>
+        <td>1</td>
+        <td>-1</td>
+      </tr>
+    </table>
+
+    <!-- <a href="scores.html" class="btn">View Scores</a> -->
   </main>
 
-  <footer>
+  <!-- <footer>
     <p>Go Jays</p>
-  </footer>
+  </footer> -->
 
 </body>
 </html>
