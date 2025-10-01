@@ -18,12 +18,6 @@ h1 {
 nav {
   text-align: center;
 }
-/* 
-a {
-  color: red;
-  background: green;
-  font-weight: bold;
-} */
 
 a:link, a:visited {
   background-color: green;

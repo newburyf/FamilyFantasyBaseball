@@ -155,7 +155,7 @@ def pushStatsChanges():
 
     if currentYear != 0:
         scoresData = db.generateJSONData(currentYear)
-        with open(f"website/data/{currentYear}.json", "w") as f:
+        with open(f"data/{currentYear}.json", "w") as f:
             json.dump(scoresData, f)
 
         print("Stats changes pushed")
@@ -388,7 +388,8 @@ def main():
 
             commandToRun = commands[commandNum - 1]
             running = commandToRun()
-        except:
+        except Exception as e:
+            print(e)
             print("Please enter a valid command number.")
         
 
