@@ -163,6 +163,20 @@ def getCurrentDraftWithNames(year, round):
                          [round, year])
     return res.fetchall()
 
+def getDraftedPlayerByRound(year, round, participant, pos):
+    global con
+    global cur
+    if con == None or cur == None:
+        setUpConnection()
+
+    res = cur.execute("""SELECT draft.playerID, players.firstName, players.lastName, draft.teamID, teams.code
+                         FROM draft
+                         INNER JOIN players ON draft.playerID = players.mlbID
+                         INNER JOIN teams on draft.teamID = teams.mlbID
+                         WHERE draft.year = ? AND draft.draftRoundNum = ? AND draft.participantID = ? AND draft.positionCode = ?;""",
+                         [year, round, participant, pos])
+    return res.fetchone()
+
 def checkGameExists(mlbID):
     global con
     global cur
@@ -258,9 +272,6 @@ def generateJSONData(year):
     }
 
     return data
-    # with open(f"website/data/{year}.txt", "w") as dataFile:
-    #     toPrint = json.dumps(data)
-    #     dataFile.write(toPrint)
 
 def generateJSONParticipants(year):
     allParticipants = getAllParticipants(year)

@@ -3,47 +3,93 @@ import statsapi
 from Enums import HitterStats as HS, HitterPoints as HP, PitcherStats as PS, PitcherPoints as PP
 import json
 
-def printCommands():
-    commands = [
-        "STATS (Update stats)",
-        "PUSH (Push stats changes)",
-        "PLAYER (Add player to database)",
-        "DRAFT (Add player draft to database)",
-        "PARTICIPANT (Add participant to database)",
-        "SETUP (Do initial database setup)",
-        "EXIT",
-    ]
-    print(f"\nCommands:")
-    for i, c in enumerate(commands):
-        print(f"{i + 1}: {c}")
+# utility input methods
+def getNumberInputFromList(message, list):
+    print(message)
+    for i, item in enumerate(list):
+        print(f"{i + 1}. {item}")
 
-def updateStats():
-    print(f"Updating stats\n--------------")
-    dateString = input("Enter the date (YYYY-MM-DD) to update stats for (0 to cancel): ")
-    year = dateString.split("-")[0] 
-    
-    if dateString != "0":
-        print(f"\nRounds:")
-        allRounds = db.getAllRounds()
-        i = 1
-        for r in allRounds:
-            print(f"{i}. {r[1]}")
-            i += 1
+    listSelection = input("Enter the number of the item to select (0 to cancel): ")
+    listNum = -1
 
-        selectedRound = input("Enter the number of the round of the date (0 to cancel): ")
-        roundNum = 0
+    while listNum == -1:
         try:
-            roundNum = int(selectedRound)
-        except:
-            print("Please enter a valid round number")
+            listNum = int(listSelection)
 
-        if roundNum != 0:
-            roundCode = allRounds[roundNum - 1][0]
+            if(listNum > len(list) or listNum < 0):
+                listNum = -1
+                raise ValueError
+            
+        except ValueError:
+            listSelection = input("Please enter a valid number: ")
+    print()
+    return listNum
 
+def getNumberInput(numType, min, max):
+    numString = input(f"Enter a {numType} (between {min} and {max}, inclusive) (0 to cancel): ")
+    num = -1
+
+    while num == -1:
+        try:
+            num = int(numString)
+
+            if (num < min and num != 0) or num > max:
+                num = -1
+                raise ValueError
+            
+        except ValueError:
+            numString = input("Please enter a valid number: ")
+    print()
+    return num
+
+def getDateInput(dateType):
+    dateString = input(f"Enter the date for {dateType} (MM-DD) (0 to cancel): ")
+
+    validDate = False
+    while not validDate and dateString != "0":
+
+        try:
+            parts = dateString.split("-")
+            if len(parts) != 2:
+                raise ValueError
+            
+            if len(parts[0]) != 2:
+                raise ValueError
+            
+            month = int(parts[0])
+            if month < 1 or month > 12:
+                raise ValueError
+            
+            if len(parts[1]) != 2:
+                raise ValueError
+            
+            day = int(parts[1])
+            # only validating days for months that playoff games happen for now, verifying all months is a pain
+            if day < 1 or (month == 9 and day > 30) or (month == 10 and day > 31) or (month == 11 and day > 30):
+                raise ValueError
+
+            validDate = True
+
+        except ValueError:
+                dateString = input("Please enter a valid date (MM-DD): ")
+
+    print()
+    return dateString
+
+# command methods
+def updateStats(year):
+    print(f"Updating stats\n--------------")
+    date = getDateInput("stats update")
+    fullDate = f"{year}-{date}"
+    if date != 0:
+        allRounds = db.getAllRounds()
+        round = getNumberInputFromList("Rounds:", [r[1] for r in allRounds])
+        if round != 0:
+            roundCode = allRounds[round - 1][0]
             currentPlayers = db.getCurrentDraft(year, roundCode)
             for player in currentPlayers:
                 teamID = player[2]
-                games = statsapi.schedule(team=teamID, date=dateString)
+                games = statsapi.schedule(team=teamID, date=fullDate)
                 if len(games) != 0:
                     gameID = games[0]["game_id"]
                     boxscoreData = statsapi.boxscore_data(gameID)
@@ -54,7 +100,7 @@ def updateStats():
                         side = "away"
                     
                     homeID = boxscoreData["teamInfo"]["home"]["id"]
-                    db.addGame(gameID, homeID, awayID, roundCode, dateString)
+                    db.addGame(gameID, homeID, awayID, roundCode, fullDate)
 
                     hitterStats = [0 for i in range(0, len(HS))]
                     pitcherStats = [0 for i in range(0, len(PS))]
@@ -63,7 +109,7 @@ def updateStats():
                     playerID = player[1]
                     positionCode = player[3]
                     
-                    if positionCode == "IF" or positionCode == "OF":
+                    if positionCode != "P":
                         for playerStats in boxscoreData[side + "Batters"]:
                             if playerStats["personId"] == playerID:
                                 hitterStats[HS.RBI.value] = int(playerStats["rbi"])
@@ -138,214 +184,133 @@ def updateStats():
                     db.addGameStats(playerID, gameID, hitterStats, pitcherStats, points)
 
             print("Stats updated")
-        else:
-            print("Canceling")
-    else:
+
+    if date == 0 or round == 0:
         print("Canceling")
 
     return True
 
-def pushStatsChanges():
-    currentYearString = input("Enter the current year (0 to cancel): ")
-    currentYear = 0
-    try:
-        currentYear = int(currentYearString)
-    except:
-        print("Please enter a valid year")
+def pushStatsChanges(year):
+    print(f"Pushing stats changes\n---------------------\n")
 
-    if currentYear != 0:
-        scoresData = db.generateJSONData(currentYear)
-        with open(f"data/{currentYear}.json", "w") as f:
-            json.dump(scoresData, f)
+    scoresData = db.generateJSONData(year)
+    with open(f"data/{year}.json", "w") as f:
+        json.dump(scoresData, f)
 
-        print("Stats changes pushed")
+    print("Stats changes pushed")
     
     return True
 
-def addPlayer():
-    print(f"Adding player\n-------------")
-    playerName = input("Enter the last name of the player you want to add (0 to cancel): ")
-    currentYearString = input("Enter the current year (0 to cancel): ")
-    currentYear = 0
-    try:
-        currentYear = int(currentYearString)
-    except:
-        print("Please enter a valid year")
-
-    if playerName != "0" and currentYear != 0:
-        players = statsapi.lookup_player(playerName, season=currentYear)
-        if len(players) == 0:
-            print("Could not find any players with that last name")
-        else:
-            print("Players:")
-            i = 1
-            for p in players:
-                team = db.getTeam(int(p['currentTeam']['id']))
-                print(f"{i}. {p['fullName']}, {team}")
-                i += 1
-
-            userInput = input("Please enter the number of the player to add them to the database (0 to cancel): ")
-            playerNum = 0
-
-            try:
-                playerNum = int(userInput)
-            except:
-                print("Please enter a valid player number")
-
-            if playerNum != 0:
-                toAdd = players[playerNum-1]
-                added = db.addPlayer(toAdd['id'], toAdd['firstName'], toAdd['lastName'])
-                if added:
-                    print(f"Added {players[playerNum-1]['fullName']} to the database")
-                else:
-                    print("Player is already in the database")
-            else:
-                print("Canceling")
-    else:
-        print("Canceling")
-
-    return True
-
-def addDraft():
+def addDraft(year):
     print(f"Adding draft result\n-------------------")
-    yearString = input("Enter the current year (0 to cancel): ")
-    year = 0
-    try:
-        year = int(yearString)
-    except:
-        print("Please enter a valid year")
 
-    if year != 0:
-        print(f"\nParticipants:")
-        allParticipants = db.getAllParticipants(year)
-        if len(allParticipants) == 0:
-            print(f"No participants registered for {yearString} yet")
-        else:
-            i = 1
-            for p in allParticipants:
-                print(f"{i}. {p[1]}")
-                i += 1
-        
-            selectedParticipant = input("Please enter the number of the participant that drafted a player (0 to cancel): ")
-            participantNum = 0
+    finishedDraft = False
+    allParticipants = db.getAllParticipants(year)
+    if len(allParticipants) == 0:
+        print(f"No participants registered for {year} yet")
+        finishedDraft = True
+    else:
+        selectedParticipant = getNumberInputFromList("Participant drafting:", [p[1] for p in allParticipants])
 
-            try:
-                participantNum = int(selectedParticipant)
-            except:
-                print("Please enter a valid participant number")
+        if selectedParticipant != 0:
+            participantID = allParticipants[selectedParticipant - 1][0]
 
-            if participantNum != 0:
-                participantID = allParticipants[participantNum - 1][0]
+            allRounds = db.getAllRounds()
+            selectedRound = getNumberInputFromList("Round:", [r[1] for r in allRounds])
 
-                allPlayers = db.getAllPlayers()
-                print(f"\nPlayers:")
-                i = 1
-                for p in allPlayers:
-                    print(f"{i}. {p[1]}")
+            if selectedRound != 0:
+                roundNum = allRounds[selectedRound - 1][0]
+
+                draftees = []
+                allPositions = db.getAllPositions()
+                i = 0
+                draftingCanceled = False
+                # for position in allPositions:
+                while i < len(allPositions) and not draftingCanceled:
+                    currentPosition = allPositions[i]
+                    print(f"Drafting {currentPosition[0]}")
+                    canAdd = False
+
+                    # checking for players continuing
+                    if roundNum > min([r[0] for r in allRounds]):
+                        previousPlayer = db.getDraftedPlayerByRound(year, roundNum - 1, participantID, currentPosition[0])
+                        if previousPlayer is not None:
+                            print(f"Currently drafted player: {previousPlayer[1]} {previousPlayer[2]}, {previousPlayer[4]}")
+                            continuePlayer = input("Enter y/n to carry on draft to next round: ")
+
+                            if continuePlayer == "y":
+                                canAdd = not db.checkDraftExists(participantID, previousPlayer[0], year, roundNum)
+                                if canAdd:
+                                    print("Carrying on player")
+                                    # storing playerID, firstName, lastName, positionCode, teamID, teamCode
+                                    draftees.append( (previousPlayer[0], previousPlayer[1], previousPlayer[2], currentPosition[0], previousPlayer[3], previousPlayer[4]) )
+
+                            print()
+
+                    # adding players otherwises
+                    while not canAdd:
+                        playerName = input(f"Enter the last name of the player you wish to draft (0 to cancel): ")
+                        
+                        if playerName == "0":
+                            canAdd = True
+                            draftingCanceled = True
+
+                        else:
+                            players = statsapi.lookup_player(playerName, season=year)
+                            if len(players) == 0:
+                                print("Could not find any players with that last name")
+                            else:
+                                playerList = []
+                                for p in players:
+                                    team = db.getTeam(int(p['currentTeam']['id']))
+                                    playerList.append(f"{p['firstName']} {p['lastName']}, {team}")
+                                selectedPlayer = getNumberInputFromList("Players:", playerList)
+
+                                if selectedPlayer != 0:
+                                    playerToAdd = players[selectedPlayer - 1]
+                                    db.addPlayer(playerToAdd['id'], playerToAdd['firstName'], playerToAdd['lastName'])
+
+                                    canAdd = not db.checkDraftExists(participantID, playerToAdd['id'], year, roundNum)
+                                    if canAdd:
+                                        draftees.append( ( playerToAdd['id'], playerToAdd['firstName'], playerToAdd['lastName'], currentPosition[0], playerToAdd['currentTeam']['id'], db.getTeam(int(playerToAdd['currentTeam']['id'])) ) )
+
                     i += 1
 
-                selectedPlayer = input("Please enter the number of the player being drafted (0 to cancel): ")
-                playerNum = 0
+                if not draftingCanceled:
+                    for pick in draftees:
+                        # storing playerID, firstName, lastName, positionCode, teamID, teamCode
+                        db.addDraft(pick[0], participantID, pick[3], pick[4], roundNum, year)
+                        print(f"Drafted {pick[1]} {pick[2]}, {pick[5]} at {pick[3]}")
+                    finishedDraft = True
 
-                try:
-                    playerNum = int(selectedPlayer)
-                except:
-                    print("Please enter a valid player number")
-
-                if playerNum != 0:
-                    playerID = allPlayers[playerNum-1][0]
-                    
-                    allTeams = db.getAllTeams()
-                    print(f"\nTeams:")
-                    i = 1
-                    for t in allTeams:
-                        print(f"{i}. {t[1]}")
-                        i += 1
-
-                    selectedTeam = input("Please enter the number of the team the player is currently on (0 to cancel): ")
-                    teamNum = 0
-                    try:
-                        teamNum = int(selectedTeam)
-                    except:
-                        print("Please enter a valid team number")
-                    
-                    if teamNum != 0:
-                        teamID = allTeams[teamNum - 1][0]
-
-                        allPositions = db.getAllPositions()
-                        print(f"\fPositions:")
-                        i = 1
-                        for p in allPositions:
-                            print(f"{i}. {p[1]}")
-                            i += 1
-
-                        selectedPosition = input("Please enter the number of the position the player is being drafted at (0 to cancel): ")
-                        positionNum = 0
-                        try:
-                            positionNum = int(selectedPosition)
-                        except:
-                            print("Please neter a vaild position number")
-                        
-                        if positionNum != 0:
-                            positionCode = allPositions[positionNum - 1][0]
-
-                            allRounds = db.getAllRounds()
-                            print(f"\nRounds:")
-                            i = 1
-                            for r in allRounds:
-                                print(f"{i}. {r[1]}")
-                                i += 1
-
-                            selectedRound = input("Please enter the current round (0 to cancel): ")
-                            roundNum = 0
-                            try:
-                                roundNum = int(selectedRound)
-                            except:
-                                print("Please enter a valid round number")
-
-                            if roundNum != 0:
-                                roundCode = allRounds[roundNum - 1][0]
-
-                                added = db.addDraft(playerID, participantID, positionCode, teamID, roundCode, year)
-                                if added:
-                                    print("Draft result added")
-                                else:
-                                    print("Draft result already exists")
-                            else:
-                                print("Canceling")
-                        else:
-                            print("Canceling")
-                    else:
-                        print("Canceling")
-                else:
-                    print("Canceling")
-            else:
-                print("Canceling")
-
-    return True
-
-def addParticipant():
-    print("Adding participant")
-    name = input("Enter the name of the participant you want to add (0 to cancel): ")
-    yearString = input("Enter the curret year (0 to cancel): ")
-    year = 0
-    try:
-        year = int(yearString)
-    except:
-        print("Please enter a valid year")
-
-    if name != "0" and year != 0:
-        added = db.addParticipant(name, year)
-        if added:
-            print(f"\"{name}\" added as a participant for {yearString}")
-        else:
-            print("Participant already exists")
+    if finishedDraft:
+        print("Drafting complete")
     else:
         print("Canceling")
 
     return True
 
-def initialDBSetUp():
+def addParticipant(year):
+    print(f"Adding participant\n------------------")
+
+    name = input("Enter the name of the participant you want to add (0 to cancel): ")
+    if name != "0":
+
+        validName = db.addParticipant(name, year)
+
+        while not validName:
+            name = input("Participant already exists, please enter another name (0 to cancel): ")
+            if name != "0":
+                validName = db.addParticipant(name, year)
+            else:
+                validName = True
+
+    if name == "0":
+        print("Canceling")
+
+    return True
+
+def initialDBSetUp(year):
     print(f"Doing initial database setup\nTHIS WILL WIPE YOUR EXISTING DATABASE IF YOU HAVE ONE SET UP ALREADY!")
     userConfirmation = input("Enter y/n to do setup/cancel: ")
 
@@ -358,39 +323,48 @@ def initialDBSetUp():
 
     return True
 
-def exitGame():
-    print("Thanks for playing")
+def exitGame(year):
+    print("Exiting game")
     db.closeConnection()
+    print("Thanks for playing!")
     return False
 
 def main():
-    print(f"Welcome to Family Fantasy Baseball!\n-----------------------------------")
-
     commands = [
         updateStats,
         pushStatsChanges,
-        addPlayer,
         addDraft,
         addParticipant,
         initialDBSetUp,
         exitGame,
     ]
-    
-    running = True
-    while running:
-        printCommands()
-        userCommand = input("Please enter the number of the command you wish to run: ")
-        print()
-        
-        commandNum = 0
-        try:
-            commandNum = int(userCommand)
 
+    commandList = [
+        "STATS (Update stats)",
+        "PUSH (Push stats changes)",
+        "DRAFT (Add player draft to database)",
+        "PARTICIPANT (Add participant to database)",
+        "SETUP (Do initial database setup)",
+        "EXIT",
+    ]
+
+    print(f"Welcome to Family Fantasy Baseball!\n-----------------------------------\n")
+
+    MIN_YEAR = 2011
+    MAX_YEAR = 2050
+    year = getNumberInput("game year", MIN_YEAR, MAX_YEAR)
+
+    running = True
+    if year == 0:
+        running = exitGame(year)
+    
+    while running:
+        commandNum = getNumberInputFromList("Commands:", commandList)
+        commandToRun = exitGame
+        if commandNum != 0:
             commandToRun = commands[commandNum - 1]
-            running = commandToRun()
-        except Exception as e:
-            print(e)
-            print("Please enter a valid command number.")
+        running = commandToRun(year)
+        print()
         
 
 if __name__ == "__main__":
