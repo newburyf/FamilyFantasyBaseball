@@ -127,5 +127,5 @@ VALUES
 INSERT INTO positions (code, name)
 VALUES
     ('IF','Infield'),
-    ('OF','Outfield'),
+    ('OF/DH','Outfield/Designated Hitter'),
     ('P','Pitcher');
