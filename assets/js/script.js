@@ -111,7 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
             participantDayTotal += points;
 
             const td = document.createElement("td");
-            td.textContent = points;
+            const scoreText = scoreObj ? scoreObj.points : "-";
+            td.textContent = scoreText;
             row.appendChild(td);
           });
 
