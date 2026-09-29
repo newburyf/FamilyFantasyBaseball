@@ -16,14 +16,6 @@ There are so many changes that I could make but it works for what it is, in futu
 
 ### Shorter Term
 
-- User Interaction:
-    - Require year entry only once on CLI startup
-    - Streamline drafting
-        - Remove need to have added player to DB first
-        - Make player/team selection easier
-        - Allow for draft continuations from previous rounds
-- Clean up CLI code
-    - Make getting user input cleaner
 - Better exception handling
 - Allow for different scoring schemes
 - Allow for partial stats updates (not all games finished)
