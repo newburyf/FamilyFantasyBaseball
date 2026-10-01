@@ -21,4 +21,4 @@ $Data = Get-Content "data\$year.json"
 
 git add .
 git commit -m "Stats updates $Date"
-# git push
+git push
