@@ -2,7 +2,7 @@ $Year = 2026
 $Round = 1
 $File = "assets\js\script.js"
 
-$Date = Get-Date -Format "MM-dd"
+$Date = (Get-Date).AddDays(-2).ToString("MM-dd")
 
 @"
 2026
@@ -21,4 +21,4 @@ $Data = Get-Content "data\$year.json"
 
 git add .
 git commit -m "Stats updates $Date"
-git push
+# git push
