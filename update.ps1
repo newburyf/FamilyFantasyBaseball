@@ -1,5 +1,5 @@
 $Year = 2026
-$Round = 1
+$Round = 2
 $File = "assets\js\script.js"
 
 $Date = (Get-Date).AddDays(-1).ToString("MM-dd")
